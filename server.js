@@ -24,7 +24,6 @@ function getAdvancedPrediction() {
     const recent = predictionHistory.slice(0, 12);
     const results = recent.map(r => r.Ket_qua);
 
-    // Đếm chuỗi bệt hiện tại
     let chain = 1;
     const last = results[0];
     for (let i = 1; i < results.length; i++) {
@@ -55,7 +54,6 @@ function getAdvancedPrediction() {
         phuong_phap = `Bám cầu bệt (${chain} tay)`;
     } 
     else {
-        // Kiểm tra cầu 1-1 (zigzag)
         let isZigzag = true;
         for (let i = 1; i < Math.min(5, results.length); i++) {
             if (results[i] === results[i-1]) {
@@ -92,11 +90,11 @@ let apiResponseData = {
     Xuc_xac: [0, 0, 0],
     Tong: null,
     Ket_qua: "",
-    Du_doan: "",
-    Do_tin_cay: "",
+    Du_doan: "Đang chờ dữ liệu...",
+    Do_tin_cay: "0%",
     Phien_du_doan: null,
-    Xac_suat: { Tai: "", Xiu: "" },
-    Phuong_phap: "",
+    Xac_suat: { Tai: "50%", Xiu: "50%" },
+    Phuong_phap: "Đang khởi tạo...",
     Lich_su: [],
     Thong_ke: { tong_du_doan: 0, dung: 0, sai: 0, ti_le_dung: "0%" },
     timestamp: null,
@@ -104,9 +102,9 @@ let apiResponseData = {
 };
 
 let currentSessionId = null;
-let lastSessionId = null;
 
-const WEBSOCKET_URL = "wss://websocket.azhkthg1.net/wsbinary?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW5kZXIiOjAsImNhblZpZXdTdGF0IjpmYWxzZSwiZGlzcGxheU5hbWUiOiJ0dWFuYnV0aWVubiIsImJvdCI6MCwiaXNNZXJjaGFudCI6ZmFsc2UsInZlcmlmaWVkQmFua0FjY291bnQiOmZhbHNlLCJwbGF5RXZlbnRMb2JieSI6ZmFsc2UsImN1c3RvbWVySWQiOjMzNDc1NTU4MCwiYWZmSWQiOiJzdW4ud2luIiwiYmFubmVkIjpmYWxzZSwiYnJhbmQiOiJzdW4ud2luIiwiZW1haWwiOiIiLCJ0aW1lc3RhbXAiOjE3NzU5NzMxMzEyNDAsImxvY2tHYW1lcyI6W10sImFtb3VudCI6MCwibG9ja0NoYXQiOmZhbHNlLCJwaG9uZVZlcmlmaWVkIjp0cnVlLCJpcEFkZHJlc3MiOiIyNDAyOjgwMDo2MTNmOjk0OTU6Y2MwZjoyZTI6YmVmNzpjNzZmIiwibXV0ZSI6ZmFsc2UsImF2YXRhciI6Imh0dHBzOi8vaW1hZ2VzLnN3aW5zaG9wLm5ldC9pbWFnZXMvYXZhdGFyL2F2YXRhcl8wNi5wbmciLCJwbGF0Zm9ybUlkIjo1LCJ1c2VySWQiOiI3MTlkNjdjYS0xOTIxLTRjNWUtOGNlNi02NGExMjFhYzBmODEiLCJlbWFpbFZlcmlmaWVkIjpudWxsLCJyZWdUaW1lIjoxNzY4ODI5MDc3MTI2LCJwaG9uZSI6Ijg0MzI4NDM5MDI0IiwiZGVwb3NpdCI6dHJ1ZSwidXNlcm5hbWUiOiJTQ190dWFudGFwbG8ifQ.gcEWuHSAhxaF4M14ML63g-IwXJfzMDF1INZp50-0CTU";
+// CẬP NHẬT WEBSOCKET URL MỚI CỦA BẠN VÀO ĐÂY
+const WEBSOCKET_URL = "wss://websocket.azhkthg1.net/wsbinary?token=TOKEN_MOI_CUA_BAN";
 
 const WS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
@@ -117,41 +115,52 @@ let ws = null;
 let pingInterval = null;
 
 function connectWebSocket() {
-    console.log('[🔌] Đang khởi tạo kết nối Sunwin...');
+    console.log('[🔌] Đang kết nối Sunwin...');
     ws = new WebSocket(WEBSOCKET_URL, { headers: WS_HEADERS });
 
     ws.on('open', () => {
-        console.log('[✅] Kết nối thành công!');
-        // Gửi tin nhắn khởi tạo
-        [ { cmd: 1005 }, { cmd: 10001 } ].forEach((p, i) => {
+        console.log('[✅] WebSocket đã mở!');
+        
+        // Gửi lệnh đăng ký MiniGame
+        const initCmds = [
+            [6, "MiniGame", "taixiuPlugin", { cmd: 1005 }],
+            [6, "MiniGame", "lobbyPlugin", { cmd: 10001 }]
+        ];
+
+        initCmds.forEach((cmd, i) => {
             setTimeout(() => {
-                if (ws.readyState === WebSocket.OPEN) 
-                    ws.send(JSON.stringify([6, "MiniGame", i === 0 ? "taixiuPlugin" : "lobbyPlugin", p]));
-            }, i * 1000);
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify(cmd));
+                    console.log(`[📤] Đã gửi lệnh khởi tạo ${i+1}`);
+                }
+            }, 1500 * (i + 1));
         });
 
         clearInterval(pingInterval);
-        pingInterval = setInterval(() => ws.readyState === WebSocket.OPEN && ws.ping(), 20000);
+        pingInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) ws.ping();
+        }, 15000);
     });
 
     ws.on('message', (data) => {
         try {
-            const json = JSON.parse(data);
+            const msgString = data.toString();
+            // Log dữ liệu để bạn kiểm tra trong bảng điều khiển (Console)
+            // console.log("[📩] Data:", msgString); 
+
+            const json = JSON.parse(msgString);
             if (!Array.isArray(json)) return;
 
             const payload = json[1];
             if (!payload) return;
 
-            // Update phiên hiện tại
-            if (payload.cmd === 1008 && payload.sid) {
-                if (currentSessionId !== payload.sid) {
-                    lastSessionId = currentSessionId; // Lưu phiên vừa kết thúc
-                    currentSessionId = payload.sid;
-                }
+            // Cập nhật mã phiên (sid)
+            if (payload.sid && payload.cmd === 1008) {
+                currentSessionId = payload.sid;
             }
 
-            // Xử lý kết quả trả về
-            if (payload.cmd === 1003 && payload.gBB && payload.d1 != null) {
+            // Xử lý khi có kết quả (cmd 1003)
+            if (payload.cmd === 1003 && payload.d1 !== undefined) {
                 const { d1, d2, d3 } = payload;
                 const total = d1 + d2 + d3;
                 const result = total >= 11 ? "Tài" : "Xỉu";
@@ -160,9 +169,9 @@ function connectWebSocket() {
                 predictionHistory.unshift({ Phien: currentSessionId, Ket_qua: result });
                 if (predictionHistory.length > 50) predictionHistory.pop();
 
-                // Kiểm tra dự đoán trước đó
+                // Thống kê tỉ lệ thắng
                 const thongKe = apiResponseData.Thong_ke;
-                if (apiResponseData.Du_doan) {
+                if (apiResponseData.Du_doan && apiResponseData.Du_doan !== "Đang chờ dữ liệu...") {
                     if (apiResponseData.Du_doan === result) {
                         thongKe.dung++;
                         consecutive_losses = 0;
@@ -174,9 +183,9 @@ function connectWebSocket() {
                     thongKe.ti_le_dung = Math.round((thongKe.dung / thongKe.tong_du_doan) * 100) + "%";
                 }
 
-                // Tính toán dự đoán mới
+                // Tính toán dự đoán cho phiên sau
                 const prediction = getAdvancedPrediction();
-                const nextSession = currentSessionId ? (parseInt(currentSessionId) + 1).toString() : "Đang chờ...";
+                const nextSession = currentSessionId ? (parseInt(currentSessionId) + 1).toString() : "N/A";
 
                 apiResponseData = {
                     Phien: currentSessionId,
@@ -190,23 +199,23 @@ function connectWebSocket() {
                     Phuong_phap: prediction.phuong_phap,
                     Lich_su: prediction.lich_su_gan_nhat,
                     Thong_ke: thongKe,
-                    timestamp: new Date().toLocaleString('vi-VN'),
-                    id: "@AnhTuấnMMO"
+                    timestamp: new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
+                    author: "@AnhTuấnMMO"
                 };
 
-                console.log(`[🎲] Phiên ${currentSessionId}: ${total} (${result}) | Tiếp theo: ${prediction.du_doan} (${prediction.do_tin_cay}%)`);
+                console.log(`[🎲] Phiên ${currentSessionId}: ${total} (${result}) -> Dự đoán: ${prediction.du_doan}`);
             }
         } catch (err) {
-            // Tránh crash khi nhận data rác
+            // Bỏ qua lỗi định dạng không phải JSON
         }
     });
 
     ws.on('close', () => {
-        console.log('[⚠️] Kết nối bị ngắt, đang thử lại...');
+        console.log('[⚠️] Mất kết nối. Thử lại sau 5 giây...');
         setTimeout(connectWebSocket, 5000);
     });
 
-    ws.on('error', (e) => console.error('[❌] Lỗi:', e.message));
+    ws.on('error', (e) => console.error('[❌] Lỗi WS:', e.message));
 }
 
 // ========== ROUTES ==========
@@ -214,6 +223,6 @@ app.get('/', (req, res) => res.json(apiResponseData));
 app.get('/api/data', (req, res) => res.json(apiResponseData));
 
 app.listen(PORT, () => {
-    console.log(`[🚀] Server đang chạy tại: http://localhost:${PORT}`);
+    console.log(`[🚀] Server: http://localhost:${PORT}`);
     connectWebSocket();
 });
