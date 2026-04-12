@@ -106,11 +106,11 @@ let apiResponseData = {
 let currentSessionId = null;
 let lastSessionId = null;
 
-const WEBSOCKET_URL = "wss://websocket.azhkthg1.net/websocket?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbW91bnQiOjAsInVzZXJuYW1lIjoiU0NfYXBpc3Vud2luMTIzIn0.hgrRbSV6vnBwJMg9ZFtbx3rRu9mX_hZMZ_m5gMNhkw0";
+const WEBSOCKET_URL = "wss://websocket.azhkthg1.net/wsbinary?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW5kZXIiOjAsImNhblZpZXdTdGF0IjpmYWxzZSwiZGlzcGxheU5hbWUiOiJ0dWFuYnV0aWVubiIsImJvdCI6MCwiaXNNZXJjaGFudCI6ZmFsc2UsInZlcmlmaWVkQmFua0FjY291bnQiOmZhbHNlLCJwbGF5RXZlbnRMb2JieSI6ZmFsc2UsImN1c3RvbWVySWQiOjMzNDc1NTU4MCwiYWZmSWQiOiJzdW4ud2luIiwiYmFubmVkIjpmYWxzZSwiYnJhbmQiOiJzdW4ud2luIiwiZW1haWwiOiIiLCJ0aW1lc3RhbXAiOjE3NzU5NzMxMzEyNDAsImxvY2tHYW1lcyI6W10sImFtb3VudCI6MCwibG9ja0NoYXQiOmZhbHNlLCJwaG9uZVZlcmlmaWVkIjp0cnVlLCJpcEFkZHJlc3MiOiIyNDAyOjgwMDo2MTNmOjk0OTU6Y2MwZjoyZTI6YmVmNzpjNzZmIiwibXV0ZSI6ZmFsc2UsImF2YXRhciI6Imh0dHBzOi8vaW1hZ2VzLnN3aW5zaG9wLm5ldC9pbWFnZXMvYXZhdGFyL2F2YXRhcl8wNi5wbmciLCJwbGF0Zm9ybUlkIjo1LCJ1c2VySWQiOiI3MTlkNjdjYS0xOTIxLTRjNWUtOGNlNi02NGExMjFhYzBmODEiLCJlbWFpbFZlcmlmaWVkIjpudWxsLCJyZWdUaW1lIjoxNzY4ODI5MDc3MTI2LCJwaG9uZSI6Ijg0MzI4NDM5MDI0IiwiZGVwb3NpdCI6dHJ1ZSwidXNlcm5hbWUiOiJTQ190dWFudGFwbG8ifQ.gcEWuHSAhxaF4M14ML63g-IwXJfzMDF1INZp50-0CTU";
 
 const WS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-    "Origin": "https://play.sun.win"
+    "Origin": "https://web.sunwin.ec/?affId=Sunwin"
 };
 
 let ws = null;
